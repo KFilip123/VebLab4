@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Add/Edit Song</title>
+</head>
+<body>
+<h1 th:text="${song != null} ? 'Edit Song' : 'Add Song'">Add/Edit Song</h1>
+
+<form th:action="@{/songs/add}" method="post">
+  <div th:if="${song != null}">
+    <input type="hidden" name="id" th:value="${song.id}" />
+  </div>
+  <label>Title:
+    <input type="text" name="title" th:value="${song != null} ? ${song.title} : ''" required/>
+  </label>
+  <br/>
+  <label>Track ID:
+    <input type="text" name="trackId" th:value="${song != null} ? ${song.trackId} : ''" required/>
+  </label>
+  <br/>
+  <label>Genre:
+    <input type="text" name="genre" th:value="${song != null} ? ${song.genre} : ''" required/>
+  </label>
+  <br/>
+  <label>Release Year:
+    <input type="text" name="releaseYear" th:value="${song != null} ? ${song.releaseYear} : ''" required/>
+  </label>
+  <br/>
+  <label>Album:
+    <select name="albumId">
+      <option th:each="album : ${albums}"
+              th:value="${album.id}"
+              th:text="${album.name}"
+              th:selected="${song != null} ? ${album.id} == ${song.album.id} : false">
+      </option>
+    </select>
+  </label>
+  <br/>
+  <button type="submit">Save</button>
+</form>
+
+<h2 th:if="${song != null}">Performers</h2>
+<form th:if="${song != null}" th:action="@{/songs/performers/delete}" method="post">
+  <table th:if="${song.performers != null}">
+    <thead>
+    <tr>
+      <th>Performer Name</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="performer : ${song.performers}">
+      <td th:text="${performer.getFirstName()}"></td>
+      <td>
+        <button th:formaction="'/songs/performers/delete/' + ${song.id} + '/' + ${performer.id}"
+                class="delete-button"
+                type="submit">
+          Delete
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</form>
+
+</body>
+</html>

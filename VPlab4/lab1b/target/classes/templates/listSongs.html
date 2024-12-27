@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <title>Songs Homepage - Welcome to My Music Store</title>
+    <style type="text/css">
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 800px;
+            margin: auto;
+        }
+
+        .flex {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 20px;
+        }
+
+        .delete-button, .edit-button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Welcome to My Music Store</h1>
+    <div th:if="${error}" style="color: red; font-weight: bold; margin-top: 10px;">
+        <span th:text="${error}"></span>
+    </div>
+</header>
+<main>
+    <h2>Choose a song:</h2>
+    <div class="album-select-container">
+        <label for="albumSelect">Filter by Album:</label>
+        <select id="albumSelect" onchange="filterByAlbum()">
+            <option value="-1">All</option>
+            <option th:each="album : ${albums}" th:value="${album.id}" th:text="${album.name}"></option>
+        </select>
+    </div>
+
+    <div class="flex">
+        <!-- Only show this form for admins -->
+        <form action="/artists/add-to-song" method="get" sec:authorize="hasRole('ROLE_ADMIN')">
+            <div th:each="song : ${songs}">
+                <input type="radio" name="songId" th:value="${song.id}" required />
+                <a th:href="'/songs/details/' + ${song.id}" th:text="${song.title}"></a>
+                , Album: <span style="color: #dc3545" th:text="${song.album.name}"></span>
+                , Genre: <span th:text="${song.genre}"></span>
+                , Release Year: <span th:text="${song.releaseYear}"></span>
+                <br/>
+            </div>
+            <input type="submit" value="Submit">
+        </form>
+
+        <!-- Show simple list for non-admin users -->
+        <div sec:authorize="!hasRole('ROLE_ADMIN')">
+            <div th:each="song : ${songs}">
+                <a th:href="'/songs/details/' + ${song.id}" th:text="${song.title}"></a>
+                , Album: <span style="color: #dc3545" th:text="${song.album.name}"></span>
+                , Genre: <span th:text="${song.genre}"></span>
+                , Release Year: <span th:text="${song.releaseYear}"></span>
+                <br/>
+            </div>
+        </div>
+
+        <!-- Only show edit/delete buttons for admins -->
+        <form sec:authorize="hasRole('ROLE_ADMIN')">
+            <div th:each="song : ${songs}">
+                <button th:formaction="'/songs/delete/' + ${song.id}" method="post">Delete</button>
+                <button th:formaction="'/songs/edit/' + ${song.id}" method="get">Edit</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Only show Add New Song button for admins -->
+    <div class="center-button" style="margin-top: 20px;" sec:authorize="hasRole('ROLE_ADMIN')">
+        <a href="/songs/add-form" class="button">Add New Song</a>
+    </div>
+</main>
+<script>
+    function filterByAlbum() {
+        const selectedAlbumId = document.getElementById('albumSelect').value;
+        window.location.href = `/songs?albumId=${selectedAlbumId}`;
+    }
+</script>
+</body>
+</html>
